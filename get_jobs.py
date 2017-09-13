@@ -13,9 +13,6 @@ import time
 #to insert the current time in db
 from datetime import datetime
 
-#to create the dataframe
-import pandas as pd
-
 #import db connection
 from __init__ import db
 from models import Jobs
@@ -25,17 +22,12 @@ from random import randint
 
 #create empty dataframe. will be used later on to concatenate the results
 columns = ['Title','Company','Location','Short Description','Link','Search Term','Source']
-jobs = pd.DataFrame(columns = columns)
 
 #headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 #request headers
 headers = {'User-Agent': 'Chrome/39.0.2171.95'}
 
-#to not truncate values
-pd.set_option('display.max_colwidth', -1)
-
-
-#parser for indeed.fr. Accepts a soup and returns a dataframe
+#parser for indeed.fr. Accepts a soup
 def indeed_jobs_parser(soup,query):
 
     data_error = 'Not found'
@@ -89,12 +81,7 @@ def indeed_jobs_parser(soup,query):
 
         job_item['Source'] = 'Indeed.fr'
 
-        #job_compiled = dict(zip(columns,job_item))
-
-        #columns = ['Title','Company','Location','Short Description','Link','Search Term']
         if not Jobs.query.filter(and_(Jobs.title==job_item['Title'],
-                                        Jobs.company==job_item['Company'],
-                                        Jobs.location==job_item['Location'],
                                         Jobs.description==job_item['Short Description'])).first():
 
             db.session.add(Jobs(title=job_item['Title'],
@@ -108,8 +95,6 @@ def indeed_jobs_parser(soup,query):
             db.session.commit()
         else:
             duplicate = Jobs.query.filter(and_(Jobs.title==job_item['Title'],
-                                        Jobs.company==job_item['Company'],
-                                        Jobs.location==job_item['Location'],
                                         Jobs.description==job_item['Short Description'])).first()
             duplicate.discovery_count += 1
             duplicate.last_date_found = datetime.utcnow()
