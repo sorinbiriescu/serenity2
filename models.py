@@ -145,6 +145,9 @@ class UserJobStatus(db.Model):
         logged_user = User.get_id_by_username(current_user)
         for job in job_id:
             status = UserJobStatus.query.filter(and_(UserJobStatus.job_id == job,UserJobStatus.user_id == logged_user)).first()
-            db.session.delete(status)
+            try:
+                db.session.delete(status)
+            except:
+                pass
         db.session.commit()
 
